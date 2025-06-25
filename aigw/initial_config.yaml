@@ -1,0 +1,27 @@
+server:
+  address: ':4141'
+  tls:
+    enabled: false
+  mtls:
+    enabled: false
+routes:
+  - schema: v1/chat_completions
+    path: /api/chat
+    policy: ollama
+    timeoutSeconds: 500
+policies:
+  - profiles:
+      - name: ollama
+    name: ollama
+profiles:
+  - services:
+      - name: ollama
+    name: ollama
+
+services:
+  - executor: ollama
+    config:
+      endpoint: http://34.220.146.44:11434/api/chat
+    name: ollama
+    type: llama3.1:8b
+
