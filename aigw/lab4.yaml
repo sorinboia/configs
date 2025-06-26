@@ -1,0 +1,49 @@
+server:
+  address: ':4141'
+  tls:
+    enabled: false
+  mtls:
+    enabled: false
+    
+routes:
+  - schema: v1/chat_completions
+    path: /api/chat
+    policy: ollama
+    timeoutSeconds: 500
+
+policies:
+  - profiles:
+      - name: ollama
+    name: ollama
+
+profiles:
+  - services:
+      - name: ollama
+    name: ollama
+    responseStages:
+      - concurrency: sequential
+        name: Protect
+        steps:
+          - name: data-security
+
+processors:
+  - type: external
+    config:
+      endpoint: http://aigw-processor-labs-data-security.aigw.svc.cluster.local
+      namespace: f5-processor-labs
+      version: 1
+    name: data-security
+    params:
+      experimental: true
+      matchers:
+        - us_address
+      modify: true
+      reject: false
+
+services:
+  - executor: ollama
+    config:
+      endpoint: http://ollama_ip:11434/api/chat
+    name: ollama
+    type: llama3.1:8b
+
