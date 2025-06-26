@@ -27,26 +27,16 @@ profiles:
           - name: data-security
 
 processors:
-  - type: external
+  - name: language-id
+    type: external
     config:
-      endpoint: http://aigw-processor-labs-data-security.aigw.svc.cluster.local
-      namespace: f5-processor-labs
+      endpoint: https://aigw-processors-f5.ai-gateway.svc.cluster.local
+      namespace: f5
       version: 1
-    name: data-security
-    params:
-      experimental: true
-      matchers:
-        - us_address
-        - national_phone:
-            name: us_number
-            regex: "\\(\\d{3}\\) \\d{3}-\\d{4}"
-            country: US
-        - regex:
-            name: email
-            value: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
-
-
-      modify: true
+    params:      
+      threshold: 0.6
+      reject: true
+      allowed_languages: ["en"]
 
 services:
   - executor: ollama
