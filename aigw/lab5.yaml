@@ -30,7 +30,7 @@ processors:
   - name: language-id
     type: external
     config:
-      endpoint: https://aigw-processors-f5.aigw.svc.cluster.local
+      endpoint: http://aigw-processors-f5.aigw.svc.cluster.local
       namespace: f5
       version: 1
     params:      
