@@ -4,19 +4,39 @@ server:
     enabled: false
   mtls:
     enabled: false
+    
 routes:
   - schema: v1/chat_completions
     path: /api/chat
     policy: ollama
     timeoutSeconds: 500
+
 policies:
   - profiles:
       - name: ollama
     name: ollama
+
 profiles:
   - services:
       - name: ollama
     name: ollama
+    inputStages:
+      - concurrency: sequential
+        name: Protect
+        steps:
+          - name: prompt-injection
+
+processors:
+  - type: external
+    config:
+      endpoint: http://aigw-processors-f5.aigw.svc.cluster.local
+      namespace: f5
+      version: 1
+    params:      
+      reject: true
+      skip_system_messages: true
+      threshold: 0.6
+    name: prompt-injection
 
 services:
   - executor: ollama
