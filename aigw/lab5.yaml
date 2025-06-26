@@ -20,11 +20,11 @@ profiles:
   - services:
       - name: ollama
     name: ollama
-    responseStages:
+    inputStages:
       - concurrency: sequential
         name: Protect
         steps:
-          - name: data-security
+          - name: language-id
 
 processors:
   - name: language-id
