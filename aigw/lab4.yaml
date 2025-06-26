@@ -37,8 +37,13 @@ processors:
       experimental: true
       matchers:
         - us_address
+        - national_phone:
+            name: us_number
+            regex: "\\d{3}-\\d{3}-\\d{4}"
+            country: US
+        - regex:
+            name: email
       modify: true
-      reject: false
 
 services:
   - executor: ollama
