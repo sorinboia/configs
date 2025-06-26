@@ -21,7 +21,7 @@ profiles:
 services:
   - executor: ollama
     config:
-      endpoint: http://34.220.146.44:11434/api/chat
+      endpoint: http://ollama_ip:11434/api/chat
     name: ollama
     type: llama3.1:8b
 
