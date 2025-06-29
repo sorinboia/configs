@@ -1,0 +1,47 @@
+server:
+  address: ':4141'
+  tls:
+    enabled: false
+  mtls:
+    enabled: false
+routes:
+  - schema: v1/chat_completions
+    path: /api/chat
+    policy: ollama
+    timeoutSeconds: 500
+policies:
+  - profiles:
+      - name: ollama
+    name: ollama
+profiles:
+  - services:
+      - name: ollama-llama3.2
+        selector:
+          operand: any
+          tags:
+            - task:summarization
+      - name: ollama
+    name: ollama
+    inputStages:
+      - concurrency: sequential
+        name: Analyze
+        steps:
+          - name: complexity-classifier
+processors:
+  - type: external
+    config:
+      endpoint: http://aigw-processor-complexity-classifier:9999
+      namespace: f5
+      version: 1
+    name: complexity-classifier
+services:
+  - executor: ollama
+    config:
+      endpoint: http://ollama_ip:11434/api/chat
+    name: ollama
+    type: llama3.1:8b
+  - executor: ollama
+    config:
+      endpoint: http://ollama_ip:11434/api/chat
+    name: ollama-llama3.2
+    type: llama3.2:3b

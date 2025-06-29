@@ -1,0 +1,98 @@
+server:
+  address: ':4141'
+  tls:
+    enabled: false
+  mtls:
+    enabled: false
+routes:
+  - schema: v1/chat_completions
+    path: /api/chat
+    policy: ollama
+    timeoutSeconds: 500
+policies:
+  - profiles:
+      - name: ollama
+    name: ollama
+profiles:
+  - services:
+      - name: ollama-llama3.2
+        selector:
+          operand: any
+          tags:
+            - task:summarization
+      - name: ollama
+    name: ollama
+    inputStages:
+      - concurrency: sequential
+        name: Analyze
+        steps:
+          - name: complexity-classifier    
+      - name: Protect
+        steps:
+          - name: language-id    
+          - name: prompt-injection      
+    responseStages:
+      - concurrency: sequential
+        name: Protect
+        steps:
+          - name: data-security
+
+
+processors:
+  - type: external
+    config:
+      endpoint: http://aigw-processor-complexity-classifier:9999
+      namespace: f5
+      version: 1
+    name: complexity-classifier
+  - name: language-id
+    type: external
+    config:
+      endpoint: http://aigw-processors-f5.aigw.svc.cluster.local
+      namespace: f5
+      version: 1
+    params:      
+      threshold: 0.6
+      reject: true
+      allowed_languages: ["en"]
+  - type: external
+    config:
+      endpoint: http://aigw-processor-labs-data-security.aigw.svc.cluster.local
+      namespace: f5-processor-labs
+      version: 1
+    name: data-security
+    params:
+      experimental: true
+      matchers:
+        - us_address
+        - national_phone:
+            name: us_number
+            regex: "\\(\\d{3}\\) \\d{3}-\\d{4}"
+            country: US
+        - regex:
+            name: email
+            value: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"      
+  - type: external
+    config:
+      endpoint: http://aigw-processors-f5.aigw.svc.cluster.local
+      namespace: f5
+      version: 1
+    params:      
+      reject: true
+      skip_system_messages: true
+      threshold: 0.6
+    name: prompt-injection            
+
+
+
+services:
+  - executor: ollama
+    config:
+      endpoint: http://ollama_ip:11434/api/chat
+    name: ollama
+    type: llama3.1:8b
+  - executor: ollama
+    config:
+      endpoint: http://ollama_ip:11434/api/chat
+    name: ollama-llama3.2
+    type: llama3.2:3b
