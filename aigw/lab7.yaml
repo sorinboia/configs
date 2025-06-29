@@ -63,6 +63,7 @@ processors:
     name: data-security
     params:
       experimental: true
+      modify: true
       matchers:
         - us_address
         - national_phone:
